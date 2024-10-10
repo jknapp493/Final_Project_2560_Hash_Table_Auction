@@ -1,2 +1,3 @@
-# Final_Project_2560_Smart_City
-Smart City Resource Allocation Algorithm -  system to allocate resources (water, electricity) to various sectors of a smart city while minimizing wastage and optimizing usage.  Focus: Use Greedy Algorithms for optimization and Graph Algorithms to represent resource flow between sectors.
+# Final_Project_2560_Hash_Table_Auction
+Smart City Resource Allocation Algorithm - Online auction system where users can bid for items in real-time, and the system must handle collisions and efficiently update bids.
+Focus: Use Hash Tables to handle bidding collisions and update the current highest bids in constant time.
