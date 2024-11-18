@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <limits>  // Used in numeric_limits for the error handling cin.ignore lines
 
 using namespace std;
 
@@ -113,12 +114,10 @@ public:
         int index = hashFunction(name);
 
         // Linear probing to find the item. (this is so if the original one when inputted got moved to a different index from a collision)
-        while (table[index] != nullptr && table[index]->key != name) {
-            index = (index + 1) % MAX_TABLE_SIZE;
-        }
+        index = linearProbe(name, index);
 
         // If the item is found, place the bid
-        if (table[index] != nullptr && table[index]->key == name) {   // if the index is found
+        if (index != -1) {   // if the index is found
             table[index]->value->Item::bidUpdate(bidAmount, bidder); // The value hash table values at the index are updated with the bidUpdate function from the Item class and its associated logic
         } else {
             cout << "Item " << name << " not found in auction." << endl;
@@ -130,12 +129,10 @@ public:
         int index = hashFunction(name);
 
         // Finds the item if it went through the linear probing collision handling
-        while (table[index] != nullptr && table[index]->key != name) {
-            index = (index + 1) % MAX_TABLE_SIZE;
-        }
+        index = linearProbe(name, index);
 
         // If the item is found, place the bid
-        if (table[index] != nullptr && table[index]->key == name) {   // if the index is found
+        if (index != -1) {   // if the index is found
             cout << "Item " << name << " found in auction!" << endl;
         } else {
             cout << "Item " << name << " not found in auction." << endl;
@@ -147,12 +144,10 @@ public:
         int index = hashFunction(name);
 
         // Finds the item if it went through the linear probing collision handling
-        while (table[index] != nullptr && table[index]->key != name) {
-            index = (index + 1) % MAX_TABLE_SIZE;
-        }
+        index = linearProbe(name, index);
 
         // If the item is found, remove it
-        if (table[index] != nullptr && table[index]->key == name) {
+        if (index != -1) {   // if the index is found
             delete table[index]->value;  // Free memory of the Item
             delete table[index];         // Free the HtItem structure
             table[index] = nullptr;  // reset the index to nullptr
@@ -190,47 +185,96 @@ public:
             cout << "4. Display all items\n";
             cout << "5. Remove an item\n";
             cout << "6. Exit\n";
-            cout << "Please Choose an option: ";
-            cin >> option; // Get the user's menu option
-            cout << endl;
-            // Menu functionality
-            if (option == 1) { // If the user chooses to add an item
-                string name;
-                cout << "Enter item name: ";
-                cin.ignore(); // Ignore the newline character left in the input buffer
-                getline(cin, name);
-                insertItem(name); // Insert the item into the auction
-            } else if (option == 2) { // If the user chooses to place a bid
-                string itemName, bidder;
-                int bidAmount;
-                cout << "Enter item name to bid on: ";
-                cin.ignore(); 
-                getline(cin, itemName);
-                cout << "Enter your name: ";
-                getline(cin, bidder);
-                cout << "Enter bid amount: ";
-                cin >> bidAmount;
-                placeBid(itemName, bidder, bidAmount); // Place the bid
-            } else if (option == 3) { // If the user chooses to search for an item
-                string name;
-                cout << "Enter item name to search for: ";
-                cin.ignore(); 
-                getline(cin, name);
-                searchItem(name); // Search for the item in the auction
-            } else if (option == 4) { // If the user chooses to display all items
-                displayAllItems(); // Display all items in the auction
-            } else if (option == 5) { 
-                string name;
-                cout << "Enter item name to remove: ";
-                cin.ignore(); 
-                getline(cin, name);
-                removeItem(name); // Remove the item from the auction
-            } else if (option == 6) { // If the user chooses to exit
-                cout << "Exiting..." << endl;
-            } else { // If the user enters an invalid option
-                cout << "Invalid option, please try again." << endl;
+            cout << "Please choose an option: ";
+
+            // Check error handling for the input option of menu
+            if (!(cin >> option)) {
+                cout << "Invalid input. Please enter a number between 1 and 6.\n";
+                cin.clear(); // Clear the error flag if therer is any
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard an invalid input
+                continue; // Restart the dowhile loop recalling the menu
             }
-        } while (option != 6); // Repeat the menu until the user chooses to exit
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear leftover newline
+            cout << endl; // New line for formatting
+
+            // Menu functionality
+            // Made a switch statement for the menu options instead of the if else statements
+            switch (option) {
+                case 1: { // Add an item
+                    string name;
+                    cout << "Enter item name: ";
+                    getline(cin, name);
+                    if (name.empty()) {
+                        cout << "Item name cannot be empty.\n";
+                    } else {
+                        insertItem(name);
+                    }
+                    break;
+                }
+                case 2: { // Place a bid
+                    string itemName, bidder;
+                    int bidAmount;
+
+                    cout << "Enter item name to bid on: ";
+                    getline(cin, itemName);
+                    if (itemName.empty()) {
+                        cout << "Item name cannot be empty.\n";
+                        break;
+                    }
+
+                    cout << "Enter your name: ";
+                    getline(cin, bidder);
+                    if (bidder.empty()) {
+                        cout << "Bidder name cannot be empty.\n";
+                        break;
+                    }
+
+                    // Error handling for bid amount as this and the option need to be integers
+                    cout << "Enter bid amount: ";
+                    if (!(cin >> bidAmount) || bidAmount <= 0) {
+                        cout << "Invalid bid amount. Please enter a positive integer.\n"; // Error message for invalid bid amount
+                        cin.clear(); // Clear the error flag if there is any
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear leftover newline
+                        break;
+                    }
+
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear leftover newline
+                    placeBid(itemName, bidder, bidAmount); // Place the bid
+                    break;
+                }
+                case 3: { // Search for an item
+                    string name;
+                    cout << "Enter item name to search for: ";
+                    getline(cin, name);
+                    if (name.empty()) {
+                        cout << "Item name cannot be empty.\n";
+                    } else {
+                        searchItem(name);
+                    }
+                    break;
+                }
+                case 4: // Display all items
+                    displayAllItems();
+                    break;
+                case 5: { // Remove an item
+                    string name;
+                    cout << "Enter item name to remove: ";
+                    getline(cin, name);
+                    if (name.empty()) {
+                        cout << "Item name cannot be empty.\n";
+                    } else {
+                        removeItem(name);
+                    }
+                    break;
+                }
+                case 6: // Exit
+                    cout << "Exiting...\n";
+                    break;
+                default:
+                    cout << "Invalid option. Please enter a number between 1 and 6.\n";
+            }
+        } while (option != 6); // Repeat until the user chooses to exit
     }
 
 // Destructor cleans up dynamically allocated memory
@@ -259,17 +303,17 @@ int main() {
     }
 
     // Add items
-    testAuction.insertItem("Antique Vase");
-    testAuction.insertItem("Vintage Watch");
-    testAuction.insertItem("Painting");
+    testAuction.insertItem("Shopping Cart");
+    testAuction.insertItem("Gucci Watch");
+    testAuction.insertItem("Mona Lisa");
 
     // place bids
-    testAuction.placeBid("Antique Vase", "Alice", 100);
-    testAuction.placeBid("Antique Vase", "Bob", 120);
-    testAuction.placeBid("Antique Vase", "Charlie", 115);  // Should fail, as bid is lower than $120
+    testAuction.placeBid("Mona Lisa", "Alice", 10);
+    testAuction.placeBid("Mona Lisa", "Bob", 150);
+    testAuction.placeBid("Mona Lisa", "Charlie", 100);  // Should fail, as bid is lower than $150
 
     // Search for an item
-    testAuction.searchItem("Antique Vase");
+    testAuction.searchItem("Mona Lisa");
 
     // Remove an item 
     testAuction.removeItem("Painting");
