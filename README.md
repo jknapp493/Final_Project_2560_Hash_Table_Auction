@@ -32,5 +32,5 @@ C:\TestPro\boost_1_86_0\bin.v2\logs
     cl /std:c++17 /I C:\TestPro\boost_1_86_0 main.cpp /link /LIBPATH:C:\TestPro\boost_1_86_0\stage\lib boost_system.lib
 
 11. Uploaded properties, tasks, and launch json to vs code
-12. Compile with following command:
+12. Compile with following command: (replace main.exe and main.cpp with explicit file name)
     g++ -std=c++17 -I"C:/TestPro/boost_1_86_0" -L"C:/TestPro/boost_install/lib" main.cpp -o main.exe "C:/TestPro/boost_install/lib/libboost_system-vc142-mt-x64-1_86.lib" "C:/TestPro/boost_install/lib/libboost_thread-vc142-mt-x64-1_86.lib" -lws2_32 -lmswsock
